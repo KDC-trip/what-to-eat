@@ -1,44 +1,55 @@
-:root { --active-color: #e67e22; }
-.theme-meal { --active-color: #e67e22; background-color: #fdf2e9; }
-.theme-snack { --active-color: #ff6b81; background-color: #fff0f3; }
-.theme-night { --active-color: #6c5ce7; background-color: #f3f0ff; }
+/* 實體搖桿底座（溝槽） */
+.lever-base { 
+    width: 20px; 
+    height: 120px; 
+    background: #333; 
+    border-radius: 10px; 
+    position: relative; 
+    cursor: pointer;
+    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+    border: 2px solid #555;
+}
 
-body { display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; font-family: "Microsoft JhengHei", sans-serif; padding-top: 20px; transition: 0.3s; }
+/* 搖桿桿身 */
+.lever-arm { 
+    width: 8px; 
+    height: 70px; 
+    background: linear-gradient(to bottom, #999, #666); 
+    position: absolute; 
+    top: 5px; /* 初始位置在上方 */
+    left: 50%; 
+    transform: translateX(-50%); 
+    transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+    border-radius: 4px;
+}
 
-/* 導覽列 */
-.nav { display: flex; gap: 10px; margin-bottom: 20px; }
-.nav button { padding: 10px 20px; border-radius: 20px; border: none; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+/* 搖桿紅球 */
+.lever-knob { 
+    width: 36px; 
+    height: 36px; 
+    background: radial-gradient(circle at 30% 30%, #ff4d4d, #b30000); 
+    border-radius: 50%; 
+    position: absolute; 
+    top: -25px; /* 球在桿子頂端 */
+    left: 50%; 
+    transform: translateX(-50%);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
 
-/* 主容器 */
-.container { text-align: center; background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 600px; min-height: 750px; }
+/* ⚡ 重點：拉下時的動畫（垂直向下位移並稍微縮短） */
+.lever-arm.pulling { 
+    top: 50px; /* 桿子往下移 */
+    height: 40px; /* 桿子因為視角縮短 */
+}
 
-/* 遊戲區：這是最重要的，要撐開高度 */
-.game-view { width: 500px; height: 500px; margin: 20px auto; position: relative; }
-
-/* 大富翁格子樣式 */
-.board-grid { display: grid; gap: 10px; width: 100%; height: 100%; }
-.cell { background: white; border: 2px solid #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; color: #555; text-align: center; padding: 5px; }
-.cell.active { background-color: #ffeb3b !important; border-color: var(--active-color) !important; transform: scale(1.1); z-index: 5; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
-.cell.special { border: 2px dashed #ff7675; color: #e74c3c; }
-
-/* 夜市版：搖桿結構 */
-.slot-container { display: flex; align-items: center; justify-content: center; gap: 40px; height: 100%; }
-.slot-machine { background: #2d3436; border: 8px solid #636e72; border-radius: 20px; padding: 40px; }
-.slot-window { width: 250px; height: 100px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; color: #6c5ce7; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
-
-/* 實體搖桿 */
-.lever-base { width: 25px; height: 150px; background: #444; border-radius: 10px; position: relative; cursor: pointer; }
-.lever-arm { width: 12px; height: 100px; background: #888; position: absolute; top: 10px; left: 6px; transform-origin: bottom center; transition: 0.3s; }
-.lever-knob { width: 40px; height: 40px; background: radial-gradient(circle, #ff4757, #ff6b81); border-radius: 50%; position: absolute; top: -30px; left: -14px; box-shadow: 0 4px 0 #b33939; }
-.lever-arm.pulling { transform: rotateX(50deg) scaleY(0.7); } /* 拉桿動畫 */
-
-/* 獎池名單 */
-.food-pool { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 15px; border: 1px solid #eee; }
-.pool-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.pool-item { background: white; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-.pool-item b { color: #ff4d4d; cursor: pointer; }
-
-/* 其他按鈕 */
-.center-btn-area { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-.main-btn { padding: 15px 30px; border-radius: 50px; border: none; background: var(--active-color); color: white; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-#result-text { font-size: 1.5rem; font-weight: bold; margin-top: 20px; color: #333; }
+/* 裝飾：底座下方加個固定環 */
+.lever-base::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: -5px;
+    width: 30px;
+    height: 10px;
+    background: #222;
+    border-radius: 5px;
+}
