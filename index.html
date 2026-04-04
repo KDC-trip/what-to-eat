@@ -2,85 +2,13 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>美食全攻略：大富翁、抽獎機與驚喜盒</title>
-    <style>
-        :root {
-            --active-color: #e67e22;
-        }
-        .theme-meal { --active-color: #e67e22; background-color: #fdf2e9; }
-        .theme-snack { --active-color: #ff6b81; background-color: #fff0f3; }
-        .theme-night { --active-color: #6c5ce7; background-color: #f3f0ff; }
-
-        body { 
-            display: flex; flex-direction: column; align-items: center; 
-            min-height: 100vh; margin: 0; transition: 0.5s; 
-            font-family: "Microsoft JhengHei", sans-serif;
-            padding-top: 10px;
-        }
-
-        /* 導覽列：移到最上方 */
-        .nav { display: flex; gap: 10px; margin-bottom: 20px; }
-        .nav button { 
-            padding: 8px 18px; border-radius: 20px; border: none; 
-            color: white; font-weight: bold; cursor: pointer; transition: 0.3s;
-        }
-        .nav button:hover { transform: scale(1.05); }
-
-        .container { 
-            text-align: center; background: white; padding: 30px; 
-            border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-            width: 550px; min-height: 650px; position: relative;
-        }
-
-        /* 輸入框與主標題 */
-        h1 { color: var(--active-color); margin: 10px 0; font-size: 2rem; }
-        .controls { margin-bottom: 15px; }
-        input { padding: 10px; border: 2px solid #eee; border-radius: 10px; width: 200px; outline: none; }
-        .add-btn { background-color: var(--active-color); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; }
-
-        /* 遊戲區域容器 */
-        .game-view { position: relative; width: 480px; height: 480px; margin: 0 auto; }
-
-        /* 模式 1：正餐大富翁 */
-        .board-grid { display: grid; gap: 10px; width: 100%; height: 100%; }
-        .cell { 
-            background: white; border: 2px solid #eee; border-radius: 12px; 
-            display: flex; align-items: center; justify-content: center; 
-            font-weight: bold; font-size: 15px; color: #555; transition: 0.1s;
-        }
-        .cell.active { 
-            background-color: #ffeb3b !important; border-color: var(--active-color) !important; 
-            transform: scale(1.1); z-index: 5; box-shadow: 0 0 15px rgba(0,0,0,0.1); 
-        }
-
-        /* 模式 2：夜市抽獎機 (垂直滾動視覺) */
-        .slot-machine { 
-            display: flex; justify-content: center; align-items: center; 
-            height: 100%; overflow: hidden; position: relative;
-            background: #2d3436; border-radius: 20px; border: 8px solid #636e72;
-        }
-        .slot-window {
-            width: 250px; height: 120px; background: white; border-radius: 15px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; font-weight: bold; color: #6c5ce7;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-        }
-
-        /* 中間按鈕 */
-        .center-btn-area { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; }
-        .main-btn { 
-            padding: 15px 30px; font-size: 1.2rem; border-radius: 50px; 
-            border: none; background: var(--active-color); color: white; 
-            font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        #result-text { font-size: 1.5rem; font-weight: bold; margin-top: 20px; height: 40px; color: #333; }
-        
-        .special { border: 2px dashed #ff7675; color: #e74c3c; }
-    </style>
+    <title>美食大冒險：正餐、點心、夜市三合一</title>
+    <!-- 引用你的 style.css -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="theme-meal">
 
+    <!-- 頂部導覽列 -->
     <div class="nav">
         <button style="background: #e67e22;" onclick="switchMode('meal')">🍱 正餐大富翁</button>
         <button style="background: #ff6b81;" onclick="switchMode('snack')">🍰 點心驚喜盒</button>
@@ -91,18 +19,19 @@
         <h1 id="title">🍱 正餐大富翁</h1>
         
         <div class="controls">
-            <input type="text" id="foodInput" placeholder="新增選項..." onkeypress="if(event.key==='Enter') addFood()">
+            <input type="text" id="foodInput" placeholder="想吃什麼？" onkeypress="if(event.key==='Enter') addFood()">
             <button class="add-btn" onclick="addFood()">新增</button>
         </div>
 
         <div class="game-view" id="gameView">
-            <!-- 內容由 JS 動態切換 -->
+            <!-- 這裡的內容會根據模式由 JavaScript 動態生成 -->
         </div>
 
         <div id="result-text">準備好了嗎？</div>
     </div>
 
 <script>
+    // 預設清單（豆花已移至點心）
     const data = {
         meal: ["牛肉麵", "壽司", "滷肉飯", "便利商店", "水餃", "煎餃", "麥當勞", "義大利麵", "火鍋", "拉麵", "便當", "肯德基"],
         snack: ["雞蛋仔", "紅豆餅", "雞排", "地瓜球", "手搖飲", "可麗餅", "甜甜圈", "鬆餅", "豆花", "冰淇淋", "布丁", "泡芙"],
@@ -116,22 +45,27 @@
     let isRunning = false;
     let currentIndex = 0;
 
+    // 模式切換
     function switchMode(mode) {
         if(isRunning) return;
         currentMode = mode;
         foods = [...data[mode]];
         document.body.className = `theme-${mode}`;
-        document.getElementById('title').innerText = 
-            mode === 'meal' ? "🍱 正餐大富翁" : mode === 'snack' ? "🍰 點心驚喜盒" : "🎡 夜市抽獎機";
+        
+        const titles = { meal: "🍱 正餐大富翁", snack: "🍰 點心驚喜盒", night: "🎡 夜市抽獎機" };
+        document.getElementById('title').innerText = titles[mode];
+        document.getElementById('result-text').innerText = "準備好了嗎？";
+        
         renderView();
     }
 
+    // 根據模式渲染不同的畫面結構
     function renderView() {
         const view = document.getElementById("gameView");
         view.innerHTML = "";
         
         if (currentMode === 'meal' || currentMode === 'snack') {
-            // 格子模式
+            // 大富翁 & 驚喜盒：使用 Grid 網格
             const board = document.createElement('div');
             board.className = "board-grid";
             
@@ -141,6 +75,7 @@
             board.style.gridTemplateRows = `repeat(${n}, 1fr)`;
             
             const total = 4 * n - 4;
+            // 打亂並填充
             gridContent = [...foods].sort(() => Math.random() - 0.5);
             let fIdx = 0;
             while (gridContent.length < total) {
@@ -149,7 +84,13 @@
             }
             gridContent = gridContent.sort(() => Math.random() - 0.5);
 
-            const path = getPath(n);
+            // 計算順時針路徑
+            const path = [];
+            for (let i = 0; i < n; i++) path.push({r: 1, c: i + 1}); // 上
+            for (let i = 2; i < n; i++) path.push({r: i, c: n});     // 右
+            for (let i = n; i >= 1; i--) path.push({r: n, c: i});    // 下
+            for (let i = n - 1; i >= 2; i--) path.push({r: i, c: 1}); // 左
+
             gridContent.forEach((text, i) => {
                 const div = document.createElement('div');
                 div.className = 'cell' + (fillers.includes(text) ? ' special' : '');
@@ -162,98 +103,118 @@
 
             const btnArea = document.createElement('div');
             btnArea.className = "center-btn-area";
-            btnArea.innerHTML = `<button class="main-btn" onclick="startGame()">幫我選一個</button>`;
+            btnArea.innerHTML = `<button class="main-btn" onclick="startGridGame()">幫我選一個</button>`;
             view.appendChild(board);
             view.appendChild(btnArea);
 
-        } else {
-            // 夜市抽獎機模式
+        } else if (currentMode === 'night') {
+            // 夜市版：使用抽獎機結構
             view.innerHTML = `
                 <div class="slot-machine">
                     <div class="slot-window" id="slotOutput">? ? ?</div>
-                </div>
-                <div class="center-btn-area" style="top: 85%">
-                    <button class="main-btn" onclick="startSlot()">拉下搖桿！</button>
+                    <div class="center-btn-area" style="top: 85%; width: 60%;">
+                        <button class="main-btn" onclick="startSlotGame()">拉下搖桿！</button>
+                    </div>
                 </div>
             `;
         }
     }
 
-    function getPath(n) {
-        const path = [];
-        for (let i = 0; i < n; i++) path.push({r: 1, c: i + 1});
-        for (let i = 2; i < n; i++) path.push({r: i, c: n});
-        for (let i = n; i >= 1; i--) path.push({r: n, c: i});
-        for (let i = n - 1; i >= 2; i--) path.push({r: i, c: 1});
-        return path;
-    }
-
     // --- 遊戲邏輯 ---
 
-    function startGame() {
+    // 1. 格子類遊戲 (正餐 & 點心)
+    function startGridGame() {
         if(isRunning) return;
         isRunning = true;
         document.getElementById("result-text").innerText = "命運轉動中...";
         
         let steps = 0;
-        let totalSteps = gridContent.length * 3 + Math.floor(Math.random() * gridContent.length);
+        let rounds = Math.floor(Math.random() * 3) + 3; // 隨機跑 3~5 圈
+        let totalSteps = gridContent.length * rounds + Math.floor(Math.random() * gridContent.length);
         let speed = 50;
 
         function run() {
             document.querySelectorAll('.cell').forEach(c => c.classList.remove('active'));
+            
             if (currentMode === 'meal') {
-                currentIndex = (currentIndex + 1) % gridContent.length;
+                currentIndex = (currentIndex + 1) % gridContent.length; // 順時針
             } else {
-                currentIndex = Math.floor(Math.random() * gridContent.length); // 點心版隨機跳
+                currentIndex = Math.floor(Math.random() * gridContent.length); // 驚喜盒隨機閃爍
             }
-            document.getElementById(`cell-${currentIndex}`).classList.add('active');
+            
+            const target = document.getElementById(`cell-${currentIndex}`);
+            if(target) target.classList.add('active');
             
             steps++;
             if (steps < totalSteps) {
-                if (totalSteps - steps < 10) speed += 40;
+                if (totalSteps - steps < 15) speed += 30; // 結尾減速
                 setTimeout(run, speed);
             } else {
-                handleResult();
+                handleGridResult();
             }
         }
         run();
     }
 
-    function startSlot() {
+    // 2. 抽獎機類遊戲 (夜市)
+    function startSlotGame() {
         if(isRunning) return;
         isRunning = true;
         const output = document.getElementById("slotOutput");
+        document.getElementById("result-text").innerText = "滾動中...";
+        
         let count = 0;
-        let maxCount = 30;
+        let maxCount = 40; // 滾動次數
         
         const timer = setInterval(() => {
-            output.innerText = foods[Math.floor(Math.random() * foods.length)];
+            const tempRandom = foods[Math.floor(Math.random() * foods.length)];
+            output.innerText = tempRandom;
             count++;
+            
             if (count > maxCount) {
                 clearInterval(timer);
                 isRunning = false;
-                document.getElementById("result-text").innerText = "🎉 抽到好料：" + output.innerText;
+                document.getElementById("result-text").innerText = "🎉 最終抽到：" + tempRandom;
             }
-        }, 80);
+        }, 70); // 滾動速度
     }
 
-    function handleResult() {
+    // 處理格子結果與連跳
+    function handleGridResult() {
         const res = gridContent[currentIndex];
-        if (fillers.includes(res)) {
-            document.getElementById("result-text").innerText = `🎲 觸發特殊：${res}`;
-            // 此處可依之前邏輯加入自動連跳
-            isRunning = false;
+        
+        if (res === "下 1 格") { jumpEffect(1); }
+        else if (res === "下 2 格") { jumpEffect(2); }
+        else if (res === "前 3 格") { jumpEffect(-3); }
+        else if (res === "再選一次") {
+            document.getElementById("result-text").innerText = "🎲 再選一次！倒數 1.5 秒...";
+            setTimeout(startGridGame, 1500);
         } else {
-            document.getElementById("result-text").innerText = `🎉 決定吃：${res}`;
             isRunning = false;
+            document.getElementById("result-text").innerText = "🎉 決定吃：" + res;
         }
+    }
+
+    function jumpEffect(s) {
+        document.getElementById("result-text").innerText = `🎲 觸發：${gridContent[currentIndex]}！`;
+        setTimeout(() => {
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('active'));
+            currentIndex = (currentIndex + s + gridContent.length) % gridContent.length;
+            document.getElementById(`cell-${currentIndex}`).classList.add('active');
+            handleGridResult(); // 遞迴檢查是否又是特殊格
+        }, 800);
     }
 
     function addFood() {
         const val = document.getElementById("foodInput").value.trim();
-        if (val) { foods.push(val); document.getElementById("foodInput").value = ""; renderView(); }
+        if (val) {
+            foods.push(val);
+            document.getElementById("foodInput").value = "";
+            renderView();
+        }
     }
 
+    // 初始啟動
     renderView();
 </script>
 </body>
