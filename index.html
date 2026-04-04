@@ -2,159 +2,91 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>無限矩形大富翁</title>
+    <title>美食大富翁 - 趣味填充版</title>
     <style>
-        body {
-            background-color: #fdf2e9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            font-family: "Microsoft JhengHei", sans-serif;
-        }
-
-        .container {
-            text-align: center;
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            width: 500px; /* 固定總寬度，讓格子變多時變小 */
-        }
-
-        h1 { color: #e67e22; margin-top: 0; }
-
-        /* 輸入與控制區 */
+        body { background-color: #fdf2e9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: "Microsoft JhengHei", sans-serif; }
+        .container { text-align: center; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 550px; }
+        h1 { color: #e67e22; margin-top: 0; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .controls { margin-bottom: 20px; }
-        input { padding: 8px; border: 2px solid #fbdcbe; border-radius: 5px; width: 180px; }
-        button {
-            background-color: #e67e22; color: white; border: none;
-            padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: 0.3s;
-        }
+        input { padding: 10px; border: 2px solid #fbdcbe; border-radius: 8px; width: 200px; outline: none; }
+        button { background-color: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; transition: 0.3s; font-weight: bold; }
         button:hover { background-color: #d35400; }
         button:disabled { background-color: #ccc; }
 
-        /* 核心：動態網格容器 */
-        .board {
-            display: grid;
-            gap: 8px;
-            margin: 20px auto;
-            width: 400px;
-            height: 400px;
-            position: relative;
-        }
+        .board { display: grid; gap: 10px; margin: 20px auto; width: 450px; height: 450px; position: relative; }
+        .cell { background: white; border: 2px solid #fbdcbe; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; color: #555; transition: 0.1s; position: relative; padding: 5px; text-align: center; box-shadow: 2px 2px 5px rgba(0,0,0,0.03); }
+        .cell.special { color: #e74c3c; background-color: #fff5f5; border-style: dashed; }
+        .cell.active { background-color: #ffeb3b; border-color: #e67e22; color: #e67e22; transform: scale(1.08); z-index: 5; box-shadow: 0 0 15px rgba(230, 126, 34, 0.5); }
 
-        .cell {
-            background: white;
-            border: 2px solid #fbdcbe;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 14px;
-            color: #555;
-            transition: 0.1s;
-            position: relative;
-            overflow: hidden;
-            word-break: break-all;
-            padding: 2px;
-        }
-
-        .cell.active {
-            background-color: #ffeb3b;
-            border-color: #e67e22;
-            color: #e67e22;
-            transform: scale(1.05);
-            z-index: 5;
-            box-shadow: 0 0 10px rgba(230, 126, 34, 0.5);
-        }
-
-        /* 中間按鈕區 */
-        .center-area {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10;
-            width: 50%;
-        }
-
-        .decide-btn {
-            width: 100%; padding: 15px; font-size: 1.2rem;
-            box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3);
-        }
-
-        #result-text { font-size: 1.4rem; color: #d35400; font-weight: bold; margin-top: 15px; height: 30px; }
+        .center-area { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; width: 45%; }
+        .decide-btn { width: 100%; padding: 15px; font-size: 1.3rem; border-radius: 15px; box-shadow: 0 6px 12px rgba(230, 126, 34, 0.3); }
+        #result-text { font-size: 1.5rem; color: #d35400; font-weight: bold; margin-top: 20px; height: 35px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>🍱 美食大富翁</h1>
-    
     <div class="controls">
         <input type="text" id="foodInput" placeholder="想吃什麼？" onkeypress="if(event.key==='Enter') addFood()">
         <button onclick="addFood()">新增</button>
     </div>
-
     <div class="board" id="board">
-        <!-- 格子與按鈕會由 JS 動態生成 -->
         <div class="center-area">
             <button class="decide-btn" id="startBtn" onclick="startGame()">幫我選一個</button>
         </div>
     </div>
-
     <div id="result-text">準備好了嗎？</div>
 </div>
 
 <script>
     let foods = ["牛肉麵", "壽司", "滷肉飯", "超商", "水餃", "煎餃", "豆花", "麥當勞", "義麵", "火鍋", "拉麵", "便當"];
+    const specialItems = ["下 1 格", "前 3 格", "下 2 格", "再選一次"];
+    let currentDisplayList = [];
     let currentIndex = 0;
     let isRunning = false;
 
     function renderBoard() {
         const board = document.getElementById("board");
-        // 清除舊格子
-        const oldCells = board.querySelectorAll('.cell');
-        oldCells.forEach(c => c.remove());
+        board.querySelectorAll('.cell').forEach(c => c.remove());
 
-        // 計算需要的矩形規格 (邊長 n)
-        // 總格子數 = 4n - 4
-        // 例如：n=4(12格), n=5(16格), n=6(20格)
-        const count = foods.length;
-        let n = Math.ceil((count + 4) / 4); 
-        if (n < 4) n = 4; // 最小 4x4
+        // 1. 計算矩形規格 n x n
+        let n = Math.ceil((foods.length + 4) / 4);
+        if (n < 4) n = 4;
+        const totalCapacity = 4 * n - 4; // 矩形外圈總格數
 
-        // 設定 Grid 樣式
+        // 2. 打亂原始食物清單 (Shuffle)
+        let shuffledFoods = [...foods].sort(() => Math.random() - 0.5);
+
+        // 3. 填充剩餘空格
+        currentDisplayList = [...shuffledFoods];
+        let specialIdx = 0;
+        while (currentDisplayList.length < totalCapacity) {
+            currentDisplayList.push(specialItems[specialIdx % specialItems.length]);
+            specialIdx++;
+        }
+
+        // 4. 設定 Grid
         board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
         board.style.gridTemplateRows = `repeat(${n}, 1fr)`;
 
-        // 計算順時針排列的網格座標
+        // 5. 計算順時針路徑
         const path = [];
-        // 1. 頂部 (左到右)
-        for (let i = 0; i < n; i++) path.push({r: 1, c: i + 1});
-        // 2. 右側 (上到下，不含角落)
-        for (let i = 2; i < n; i++) path.push({r: i, c: n});
-        // 3. 底部 (右到左)
-        for (let i = n; i >= 1; i--) path.push({r: n, c: i});
-        // 4. 左側 (下到上，不含角落)
-        for (let i = n - 1; i >= 2; i--) path.push({r: i, c: 1});
+        for (let i = 0; i < n; i++) path.push({r: 1, c: i + 1}); // 上
+        for (let i = 2; i < n; i++) path.push({r: i, c: n});     // 右
+        for (let i = n; i >= 1; i--) path.push({r: n, c: i});    // 下
+        for (let i = n - 1; i >= 2; i--) path.push({r: i, c: 1}); // 左
 
-        // 建立格子
-        foods.forEach((food, i) => {
-            if (i >= path.length) return; // 超出矩形承載量則不顯示(理論上邏輯會自動擴充)
+        // 6. 渲染
+        currentDisplayList.forEach((text, i) => {
             const div = document.createElement('div');
             div.className = 'cell';
+            if (specialItems.includes(text)) div.classList.add('special');
             div.id = `cell-${i}`;
-            div.innerText = food;
+            div.innerText = text;
             div.style.gridRow = path[i].r;
             div.style.gridColumn = path[i].c;
-            
-            // 如果格子太多，自動縮小字體
-            if (n > 6) div.style.fontSize = "12px";
-            if (n > 8) div.style.fontSize = "10px";
-
+            if (n > 5) div.style.fontSize = "13px";
             board.appendChild(div);
         });
     }
@@ -164,7 +96,7 @@
         if (input.value.trim()) {
             foods.push(input.value.trim());
             input.value = "";
-            renderBoard();
+            renderBoard(); // 新增後會自動打亂位置並填補
         }
     }
 
@@ -172,30 +104,39 @@
         if (isRunning || foods.length === 0) return;
         isRunning = true;
         document.getElementById("startBtn").disabled = true;
-        document.getElementById("result-text").innerText = "選菜中...";
+        document.getElementById("result-text").innerText = "命運轉動中...";
 
         let rounds = 3;
-        let totalSteps = (foods.length * rounds) + Math.floor(Math.random() * foods.length);
+        let totalSteps = (currentDisplayList.length * rounds) + Math.floor(Math.random() * currentDisplayList.length);
         let currentStep = 0;
         let speed = 50;
 
         function roll() {
             document.querySelectorAll('.cell').forEach(c => c.classList.remove('active'));
-            currentIndex = (currentIndex + 1) % foods.length;
-            const activeCell = document.getElementById(`cell-${currentIndex}`);
-            if (activeCell) activeCell.classList.add('active');
+            currentIndex = (currentIndex + 1) % currentDisplayList.length;
+            document.getElementById(`cell-${currentIndex}`).classList.add('active');
 
             currentStep++;
             if (currentStep < totalSteps) {
-                if (totalSteps - currentStep < 10) speed += 40;
+                if (totalSteps - currentStep < 10) speed += 50;
                 setTimeout(roll, speed);
             } else {
-                isRunning = false;
-                document.getElementById("startBtn").disabled = false;
-                document.getElementById("result-text").innerText = "🎉 今天吃：" + foods[currentIndex];
+                handleResult(currentDisplayList[currentIndex]);
             }
         }
         roll();
+    }
+
+    function handleResult(result) {
+        isRunning = false;
+        document.getElementById("startBtn").disabled = false;
+        
+        if (specialItems.includes(result)) {
+            document.getElementById("result-text").innerText = "🎲 抽到：" + result + "！";
+            // 如果抽到特殊格，可以讓使用者手動再點一次或自動跳轉，這裡先顯示結果
+        } else {
+            document.getElementById("result-text").innerText = "🎉 今天吃：" + result;
+        }
     }
 
     renderBoard();
