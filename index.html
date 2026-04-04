@@ -2,83 +2,182 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>要吃什麼好呢？</title>
+    <title>美食大富翁：今天要吃啥？</title>
     <style>
-        /* 簡單加一點樣式讓介面更清爽 */
-        .container { text-align: center; margin-top: 50px; font-family: sans-serif; }
-        .menu-list { margin: 20px auto; max-width: 300px; text-align: left; border: 1px solid #ddd; padding: 10px; border-radius: 8px; }
+        :root {
+            --primary-color: #ffc107;
+            --active-color: #ff5722;
+        }
+        body { font-family: 'Microsoft JhengHei', sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; padding-top: 50px; }
+        .container { text-align: center; width: 600px; }
+        
+        /* 大富翁外框網格 */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+            margin: 30px auto;
+            width: 400px;
+            height: 400px;
+            position: relative;
+        }
+
+        /* 格子樣式 */
+        .cell {
+            border: 2px solid #ddd;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+            padding: 5px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* 被選中時的高亮樣式 */
+        .cell.active {
+            background-color: var(--primary-color);
+            border-color: var(--active-color);
+            transform: scale(1.1);
+            z-index: 10;
+            box-shadow: 0 0 15px var(--active-color);
+        }
+
+        /* 中間的控制區 */
+        .center-area {
+            grid-column: 2 / 4;
+            grid-row: 2 / 4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+        }
+
         .input-group { margin-bottom: 20px; }
-        input { padding: 5px; border-radius: 4px; border: 1px solid #ccc; }
-        button { cursor: pointer; padding: 5px 15px; border-radius: 4px; border: none; background-color: #007bff; color: white; }
+        input { padding: 8px; border-radius: 4px; border: 1px solid #ccc; width: 150px; }
+        button { cursor: pointer; padding: 8px 15px; border-radius: 4px; border: none; background-color: #007bff; color: white; transition: 0.3s; }
         button:hover { background-color: #0056b3; }
-        .decide-btn { background-color: #28a745; font-size: 1.2rem; padding: 10px 20px; }
-        .decide-btn:hover { background-color: #218838; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .decide-btn { 
+            background-color: #28a745; 
+            font-size: 1.1rem; 
+            padding: 15px; 
+            width: 100%;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        #result-text { margin-top: 20px; font-size: 1.5rem; color: #d9534f; font-weight: bold; height: 35px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>要吃什麼好呢？</h1>
+        <h1>🍱 美食大富翁</h1>
         
         <div class="input-group">
-            <input type="text" id="foodInput" placeholder="輸入你想吃的..." onkeypress="handleKeyPress(event)">
-            <button onclick="addFood()">新增選項</button>
+            <input type="text" id="foodInput" placeholder="想吃的新清單..." onkeypress="handleKeyPress(event)">
+            <button onclick="addFood()">新增</button>
         </div>
 
-        <div class="menu-list">
-            <strong>目前候選名單：</strong>
-            <div id="displayList"></div>
+        <div class="board" id="board">
+            <!-- 格子會由 JS 自動生成，中間保留給按鈕 -->
+            <div class="center-area">
+                <button class="decide-btn" id="startBtn" onclick="startGame()">開始抽籤</button>
+            </div>
         </div>
 
-        <hr>
-
-        <p id="suggestion">準備好了嗎？點擊按鈕決定下一餐！</p>
-        <button class="decide-btn" onclick="decide()">幫我選一個</button>
+        <div id="result-text">準備好了嗎？</div>
     </div>
 
     <script>
-        // 預設選項
-        let foods = ["牛肉麵", "迴轉壽司", "滷肉飯", "便利商店", "水餃", "煎餃", "豆花", "麥當勞", "義大利麵", "火鍋"];
+        // 預設選項 (固定 12 個格子以維持 4x4 邊框)
+        let foods = ["牛肉麵", "迴轉壽司", "滷肉飯", "便利商店", "水餃", "煎餃", "豆花", "麥當勞", "義大利麵", "火鍋", "拉麵", "三明治"];
+        
+        // 對應 4x4 網格順時針繞圈的索引位置
+        const mapOrder = [0, 1, 2, 3, 5, 8, 11, 10, 9, 7, 4]; 
+        // 索引邏輯：頂部(0,1,2,3) -> 右側(5,8) -> 底部(11,10,9) -> 左側(7,4)
+        const cellIndices = [0, 1, 2, 3, 7, 11, 15, 14, 13, 12, 8, 4];
 
-        // 初始化顯示清單
-        updateDisplay();
+        let currentIndex = 0; // 當前亮起的格子索引
+        let isRunning = false;
 
-        // 新增食物的函式
+        function initBoard() {
+            const board = document.getElementById("board");
+            // 清除除了 center-area 以外的舊格子
+            const cells = board.querySelectorAll('.cell');
+            cells.forEach(c => c.remove());
+
+            // 建立 12 個外圍格子
+            cellIndices.forEach((gridPos, i) => {
+                const div = document.createElement('div');
+                div.className = 'cell';
+                div.id = `cell-${i}`;
+                div.innerText = foods[i] || "待加...";
+                div.style.gridColumn = (gridPos % 4) + 1;
+                div.style.gridRow = Math.floor(gridPos / 4) + 1;
+                board.appendChild(div);
+            });
+        }
+
         function addFood() {
             const input = document.getElementById("foodInput");
-            const newFood = input.value.trim();
-            
-            if (newFood !== "") {
-                foods.push(newFood);
-                input.value = ""; // 清空輸入框
-                updateDisplay();
-            } else {
-                alert("請輸入食物名稱內容喔！");
+            const val = input.value.trim();
+            if (val && foods.length < 12) {
+                foods.push(val); // 簡單演示：若超過12個則不增加或取代
+                input.value = "";
+                initBoard();
+            } else if (foods.length >= 12) {
+                alert("格子滿了！目前的邏輯只支援 12 個喔。");
             }
         }
 
-        // 按下 Enter 鍵也能新增
-        function handleKeyPress(event) {
-            if (event.key === "Enter") {
-                addFood();
+        function handleKeyPress(e) { if (e.key === "Enter") addFood(); }
+
+        function startGame() {
+            if (isRunning) return;
+            isRunning = true;
+            document.getElementById("startBtn").disabled = true;
+            document.getElementById("result-text").innerText = "選菜中...";
+
+            let rounds = 3; // 圈數
+            let totalSteps = (foods.length * rounds) + Math.floor(Math.random() * foods.length);
+            let currentStep = 0;
+            let speed = 50; // 初始速度
+
+            function roll() {
+                // 移除上一個高亮
+                document.getElementById(`cell-${currentIndex}`).classList.remove('active');
+                
+                // 計算下一個高亮
+                currentIndex = (currentIndex + 1) % foods.length;
+                document.getElementById(`cell-${currentIndex}`).classList.add('active');
+
+                currentStep++;
+
+                if (currentStep < totalSteps) {
+                    // 減速邏輯：最後 10 步開始變慢
+                    if (totalSteps - currentStep < 10) {
+                        speed += 40;
+                    }
+                    setTimeout(roll, speed);
+                } else {
+                    // 結束
+                    isRunning = false;
+                    document.getElementById("startBtn").disabled = false;
+                    document.getElementById("result-text").innerText = "🎉 今天就吃：" + foods[currentIndex];
+                }
             }
+            roll();
         }
 
-        // 更新畫面上的清單文字
-        function updateDisplay() {
-            const listDiv = document.getElementById("displayList");
-            listDiv.innerText = foods.join("、");
-        }
-
-        // 隨機決定
-        function decide() {
-            if (foods.length === 0) {
-                document.getElementById("suggestion").innerText = "清單是空的，先加點想吃的吧！";
-                return;
-            }
-            const random = Math.floor(Math.random() * foods.length);
-            document.getElementById("suggestion").innerText = "現在就吃：" + foods[random];
-        }
+        initBoard();
     </script>
 
 </body>
