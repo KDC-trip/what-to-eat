@@ -1,114 +1,44 @@
-<!-- 將這段覆蓋 index.html 的 <body> 部分 -->
-<body class="theme-meal">
+:root { --active-color: #e67e22; }
+.theme-meal { --active-color: #e67e22; background-color: #fdf2e9; }
+.theme-snack { --active-color: #ff6b81; background-color: #fff0f3; }
+.theme-night { --active-color: #6c5ce7; background-color: #f3f0ff; }
 
-    <div class="nav">
-        <button style="background: #e67e22;" onclick="switchMode('meal')">🍱 正餐大富翁</button>
-        <button style="background: #ff6b81;" onclick="switchMode('snack')">🍰 點心驚喜盒</button>
-        <button style="background: #6c5ce7;" onclick="switchMode('night')">🎡 夜市抽獎機</button>
-    </div>
+body { display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; font-family: "Microsoft JhengHei", sans-serif; padding-top: 20px; transition: 0.3s; }
 
-    <div class="container">
-        <h1 id="title">🍱 正餐大富翁</h1>
-        
-        <div class="controls">
-            <input type="text" id="foodInput" placeholder="想吃什麼？" onkeypress="if(event.key==='Enter') addFood()">
-            <button class="add-btn" onclick="addFood()">新增</button>
-        </div>
+/* 導覽列 */
+.nav { display: flex; gap: 10px; margin-bottom: 20px; }
+.nav button { padding: 10px 20px; border-radius: 20px; border: none; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
-        <div class="game-view" id="gameView">
-            <!-- 動態生成 -->
-        </div>
+/* 主容器 */
+.container { text-align: center; background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 600px; min-height: 750px; }
 
-        <!-- 新增：目前的選項清單區域 -->
-        <div class="food-pool">
-            <div style="font-weight: bold; margin-bottom: 10px; color: #666;">📜 目前獎池 (點擊 ✕ 刪除)：</div>
-            <div id="poolList" class="pool-list"></div>
-        </div>
+/* 遊戲區：這是最重要的，要撐開高度 */
+.game-view { width: 500px; height: 500px; margin: 20px auto; position: relative; }
 
-        <div id="result-text">準備好了嗎？</div>
-    </div>
+/* 大富翁格子樣式 */
+.board-grid { display: grid; gap: 10px; width: 100%; height: 100%; }
+.cell { background: white; border: 2px solid #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; color: #555; text-align: center; padding: 5px; }
+.cell.active { background-color: #ffeb3b !important; border-color: var(--active-color) !important; transform: scale(1.1); z-index: 5; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+.cell.special { border: 2px dashed #ff7675; color: #e74c3c; }
 
-<script>
-    // 預設資料
-    const data = {
-        meal: ["牛肉麵", "壽司", "滷肉飯", "便利商店", "水餃", "煎餃", "麥當勞", "義大利麵", "火鍋", "拉麵", "便當", "肯德基"],
-        snack: ["雞蛋仔", "紅豆餅", "雞排", "地瓜球", "手搖飲", "可麗餅", "甜甜圈", "鬆餅", "豆花", "冰淇淋", "布丁", "泡芙"],
-        night: ["臭豆腐", "蚵仔煎", "大腸包小腸", "烤魷魚", "排骨酥", "章魚燒", "地瓜球", "骰子牛", "糖葫蘆", "滷味", "鹹酥雞", "胡椒餅"]
-    };
-    const fillers = ["下 1 格", "前 3 格", "下 2 格", "再選一次"];
-    
-    let currentMode = 'meal';
-    let foods = [...data.meal];
-    let isRunning = false;
+/* 夜市版：搖桿結構 */
+.slot-container { display: flex; align-items: center; justify-content: center; gap: 40px; height: 100%; }
+.slot-machine { background: #2d3436; border: 8px solid #636e72; border-radius: 20px; padding: 40px; }
+.slot-window { width: 250px; height: 100px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: bold; color: #6c5ce7; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
 
-    function switchMode(mode) {
-        if(isRunning) return;
-        currentMode = mode;
-        foods = [...data[mode]];
-        document.body.className = `theme-${mode}`;
-        document.getElementById('title').innerText = mode==='meal'?"🍱 正餐大富翁":mode==='snack'?"🍰 點心驚喜盒":"🎡 夜市抽獎機";
-        renderView();
-        updatePoolUI();
-    }
+/* 實體搖桿 */
+.lever-base { width: 25px; height: 150px; background: #444; border-radius: 10px; position: relative; cursor: pointer; }
+.lever-arm { width: 12px; height: 100px; background: #888; position: absolute; top: 10px; left: 6px; transform-origin: bottom center; transition: 0.3s; }
+.lever-knob { width: 40px; height: 40px; background: radial-gradient(circle, #ff4757, #ff6b81); border-radius: 50%; position: absolute; top: -30px; left: -14px; box-shadow: 0 4px 0 #b33939; }
+.lever-arm.pulling { transform: rotateX(50deg) scaleY(0.7); } /* 拉桿動畫 */
 
-    function renderView() {
-        const view = document.getElementById("gameView");
-        view.innerHTML = "";
-        
-        if (currentMode === 'night') {
-            // 夜市抽獎機：加入拉桿 HTML
-            view.innerHTML = `
-                <div class="slot-container">
-                    <div class="slot-machine">
-                        <div class="slot-window" id="slotOutput">? ? ?</div>
-                    </div>
-                    <!-- 實體搖桿結構 -->
-                    <div class="lever-base" onclick="handleLeverClick()">
-                        <div class="lever-arm" id="leverArm">
-                            <div class="lever-knob"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        } else {
-            // 大富翁 & 驚喜盒 (邏輯同前，略縮寫)
-            const board = document.createElement('div');
-            board.className = "board-grid";
-            // ... (此處保留原有的 Grid 生成邏輯)
-            // 為了簡潔，建議直接套用你原本 index.html 內的 renderView 邏輯
-            view.innerHTML = `<div class="board-grid" id="gridBoard"></div><div class="center-btn-area"><button class="main-btn" onclick="startGridGame()">幫我選一個</button></div>`;
-            rebuildGrid(); 
-        }
-    }
+/* 獎池名單 */
+.food-pool { margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 15px; border: 1px solid #eee; }
+.pool-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.pool-item { background: white; border: 1px solid #ddd; padding: 5px 12px; border-radius: 20px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+.pool-item b { color: #ff4d4d; cursor: pointer; }
 
-    // 更新下方獎池 UI
-    function updatePoolUI() {
-        const list = document.getElementById("poolList");
-        list.innerHTML = "";
-        foods.forEach((f, index) => {
-            const span = document.createElement("span");
-            span.className = "pool-item";
-            span.innerHTML = `${f} <b onclick="removeFood(${index})">✕</b>`;
-            list.appendChild(span);
-        });
-    }
-
-    function removeFood(index) {
-        if(isRunning) return;
-        foods.splice(index, 1);
-        updatePoolUI();
-        renderView();
-    }
-
-    function handleLeverClick() {
-        if(isRunning) return;
-        const arm = document.getElementById("leverArm");
-        arm.classList.add("pulling"); // 觸發拉桿動畫
-        setTimeout(() => arm.classList.remove("pulling"), 500);
-        startSlotGame();
-    }
-
-    // (其餘 startSlotGame, startGridGame 邏輯維持不變)
-    // ...
-</script>
-</body>
+/* 其他按鈕 */
+.center-btn-area { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.main-btn { padding: 15px 30px; border-radius: 50px; border: none; background: var(--active-color); color: white; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+#result-text { font-size: 1.5rem; font-weight: bold; margin-top: 20px; color: #333; }
