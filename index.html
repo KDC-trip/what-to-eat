@@ -2,197 +2,202 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>無限美食大富翁</title>
+    <title>無限矩形大富翁</title>
     <style>
-        :root {
-            --primary-color: #ffd700;
-            --active-color: #ff4500;
-        }
-        body { font-family: sans-serif; background-color: #f8f9fa; display: flex; justify-content: center; padding: 20px; }
-        .container { text-align: center; max-width: 800px; width: 100%; }
-        
-        /* 輸入與控制區 */
-        .controls { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        input { padding: 10px; border: 2px solid #ddd; border-radius: 6px; width: 200px; font-size: 1rem; }
-        button { cursor: pointer; padding: 10px 20px; border-radius: 6px; border: none; font-weight: bold; transition: 0.2s; }
-        .add-btn { background-color: #007bff; color: white; }
-        .decide-btn { background-color: #28a745; color: white; font-size: 1.2rem; margin-top: 10px; width: 200px; }
-        .decide-btn:disabled { background-color: #ccc; }
-
-        /* 大富翁格子容器：使用 Flex 自動換行 */
-        .board {
+        body {
+            background-color: #fdf2e9;
             display: flex;
-            flex-wrap: wrap;
             justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-            min-height: 200px;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Microsoft JhengHei", sans-serif;
         }
 
-        /* 單個格子樣式 */
-        .cell {
-            width: 100px;
-            height: 100px;
+        .container {
+            text-align: center;
             background: white;
-            border: 3px solid #eee;
-            border-radius: 12px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 500px; /* 固定總寬度，讓格子變多時變小 */
+        }
+
+        h1 { color: #e67e22; margin-top: 0; }
+
+        /* 輸入與控制區 */
+        .controls { margin-bottom: 20px; }
+        input { padding: 8px; border: 2px solid #fbdcbe; border-radius: 5px; width: 180px; }
+        button {
+            background-color: #e67e22; color: white; border: none;
+            padding: 8px 15px; border-radius: 5px; cursor: pointer; transition: 0.3s;
+        }
+        button:hover { background-color: #d35400; }
+        button:disabled { background-color: #ccc; }
+
+        /* 核心：動態網格容器 */
+        .board {
+            display: grid;
+            gap: 8px;
+            margin: 20px auto;
+            width: 400px;
+            height: 400px;
+            position: relative;
+        }
+
+        .cell {
+            background: white;
+            border: 2px solid #fbdcbe;
+            border-radius: 8px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            position: relative;
-            transition: all 0.1s;
-            word-break: break-all;
-            padding: 5px;
             font-weight: bold;
+            font-size: 14px;
+            color: #555;
+            transition: 0.1s;
+            position: relative;
+            overflow: hidden;
+            word-break: break-all;
+            padding: 2px;
         }
 
-        /* 跑馬燈選中效果 */
         .cell.active {
-            border-color: var(--active-color);
-            background-color: var(--primary-color);
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(255, 69, 0, 0.4);
+            background-color: #ffeb3b;
+            border-color: #e67e22;
+            color: #e67e22;
+            transform: scale(1.05);
             z-index: 5;
+            box-shadow: 0 0 10px rgba(230, 126, 34, 0.5);
         }
 
-        /* 刪除按鈕 */
-        .delete-x {
+        /* 中間按鈕區 */
+        .center-area {
             position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #ff4d4d;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 12px;
-            line-height: 20px;
-            cursor: pointer;
-            display: none;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            width: 50%;
         }
-        .cell:hover .delete-x { display: block; }
 
-        #result-display {
-            font-size: 2rem;
-            margin: 20px 0;
-            color: #333;
-            height: 50px;
-            font-weight: 900;
+        .decide-btn {
+            width: 100%; padding: 15px; font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(230, 126, 34, 0.3);
         }
+
+        #result-text { font-size: 1.4rem; color: #d35400; font-weight: bold; margin-top: 15px; height: 30px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🎲 無限美食大富翁</h1>
+    <h1>🍱 美食大富翁</h1>
     
     <div class="controls">
         <input type="text" id="foodInput" placeholder="想吃什麼？" onkeypress="if(event.key==='Enter') addFood()">
-        <button class="add-btn" onclick="addFood()">新增選項</button>
-        <br>
-        <button class="decide-btn" id="startBtn" onclick="startGame()">幫我選一個！</button>
+        <button onclick="addFood()">新增</button>
     </div>
-
-    <div id="result-display">今天吃什麼好呢？</div>
 
     <div class="board" id="board">
-        <!-- JS 會在這裡動態產生格子 -->
+        <!-- 格子與按鈕會由 JS 動態生成 -->
+        <div class="center-area">
+            <button class="decide-btn" id="startBtn" onclick="startGame()">幫我選一個</button>
+        </div>
     </div>
+
+    <div id="result-text">準備好了嗎？</div>
 </div>
 
 <script>
-    // 初始化清單
-    let foods = ["牛肉麵", "壽司", "滷肉飯", "便利商店", "水餃", "麥當勞", "義大利麵", "火鍋"];
-    let currentIndex = -1;
+    let foods = ["牛肉麵", "壽司", "滷肉飯", "超商", "水餃", "煎餃", "豆花", "麥當勞", "義麵", "火鍋", "拉麵", "便當"];
+    let currentIndex = 0;
     let isRunning = false;
 
-    // 渲染所有格子
     function renderBoard() {
         const board = document.getElementById("board");
-        board.innerHTML = ""; // 清空
-        
-        foods.forEach((food, index) => {
-            const div = document.createElement("div");
-            div.className = "cell";
-            div.id = `cell-${index}`;
-            div.innerHTML = `
-                <span class="delete-x" onclick="removeFood(${index})">✕</span>
-                <div>${food}</div>
-            `;
+        // 清除舊格子
+        const oldCells = board.querySelectorAll('.cell');
+        oldCells.forEach(c => c.remove());
+
+        // 計算需要的矩形規格 (邊長 n)
+        // 總格子數 = 4n - 4
+        // 例如：n=4(12格), n=5(16格), n=6(20格)
+        const count = foods.length;
+        let n = Math.ceil((count + 4) / 4); 
+        if (n < 4) n = 4; // 最小 4x4
+
+        // 設定 Grid 樣式
+        board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+        board.style.gridTemplateRows = `repeat(${n}, 1fr)`;
+
+        // 計算順時針排列的網格座標
+        const path = [];
+        // 1. 頂部 (左到右)
+        for (let i = 0; i < n; i++) path.push({r: 1, c: i + 1});
+        // 2. 右側 (上到下，不含角落)
+        for (let i = 2; i < n; i++) path.push({r: i, c: n});
+        // 3. 底部 (右到左)
+        for (let i = n; i >= 1; i--) path.push({r: n, c: i});
+        // 4. 左側 (下到上，不含角落)
+        for (let i = n - 1; i >= 2; i--) path.push({r: i, c: 1});
+
+        // 建立格子
+        foods.forEach((food, i) => {
+            if (i >= path.length) return; // 超出矩形承載量則不顯示(理論上邏輯會自動擴充)
+            const div = document.createElement('div');
+            div.className = 'cell';
+            div.id = `cell-${i}`;
+            div.innerText = food;
+            div.style.gridRow = path[i].r;
+            div.style.gridColumn = path[i].c;
+            
+            // 如果格子太多，自動縮小字體
+            if (n > 6) div.style.fontSize = "12px";
+            if (n > 8) div.style.fontSize = "10px";
+
             board.appendChild(div);
         });
     }
 
-    // 新增
     function addFood() {
         const input = document.getElementById("foodInput");
-        const val = input.value.trim();
-        if (val) {
-            foods.push(val);
+        if (input.value.trim()) {
+            foods.push(input.value.trim());
             input.value = "";
             renderBoard();
         }
     }
 
-    // 刪除
-    function removeFood(index) {
-        if (isRunning) return;
-        foods.splice(index, 1);
-        renderBoard();
-    }
-
-    // 開始跑馬燈
     function startGame() {
         if (isRunning || foods.length === 0) return;
-        
         isRunning = true;
         document.getElementById("startBtn").disabled = true;
-        document.getElementById("result-display").innerText = "挑選中...";
+        document.getElementById("result-text").innerText = "選菜中...";
 
-        let rounds = 3; // 固定繞三圈
+        let rounds = 3;
         let totalSteps = (foods.length * rounds) + Math.floor(Math.random() * foods.length);
         let currentStep = 0;
-        let speed = 60; // 初始速度
+        let speed = 50;
 
-        // 如果之前有選中的，先清除
-        if (currentIndex !== -1) {
-            document.getElementById(`cell-${currentIndex}`).classList.remove('active');
-        }
-        
-        // 跑馬燈遞迴函式
-        function move() {
-            // 清除前一格
-            if (currentIndex !== -1) {
-                document.getElementById(`cell-${currentIndex}`).classList.remove('active');
-            }
-
-            // 往下走一格
+        function roll() {
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('active'));
             currentIndex = (currentIndex + 1) % foods.length;
-            document.getElementById(`cell-${currentIndex}`).classList.add('active');
+            const activeCell = document.getElementById(`cell-${currentIndex}`);
+            if (activeCell) activeCell.classList.add('active');
 
             currentStep++;
-
             if (currentStep < totalSteps) {
-                // 減速邏輯
-                if (totalSteps - currentStep < 10) {
-                    speed += 50;
-                }
-                setTimeout(move, speed);
+                if (totalSteps - currentStep < 10) speed += 40;
+                setTimeout(roll, speed);
             } else {
-                // 結束點餐
                 isRunning = false;
                 document.getElementById("startBtn").disabled = false;
-                const finalFood = foods[currentIndex];
-                document.getElementById("result-display").innerText = "🎉 就決定是：" + finalFood;
+                document.getElementById("result-text").innerText = "🎉 今天吃：" + foods[currentIndex];
             }
         }
-        
-        currentIndex = -1; // 每次重頭開始跑
-        move();
+        roll();
     }
 
-    // 初始執行一次
     renderBoard();
 </script>
 
