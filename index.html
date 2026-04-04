@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>美食全攻略 - 最終修復版</title>
+    <title>美食全攻略</title>
     <style>
-        /* 直接把樣式寫在這裡，確保 100% 讀取到 */
+        /* 直接把樣式內建，保證絕對不會讀不到畫面 */
         :root { --active-color: #e67e22; }
         .theme-meal { --active-color: #e67e22; background-color: #fdf2e9; }
         .theme-snack { --active-color: #ff6b81; background-color: #fff0f3; }
@@ -13,21 +13,21 @@
         body { display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; font-family: sans-serif; padding: 10px; transition: 0.3s; box-sizing: border-box; }
         .nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 15px; width: 100%; }
         .nav button { padding: 8px 15px; border-radius: 20px; border: none; color: white; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .container { text-align: center; background: white; padding: 20px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; box-sizing: border-box; }
-        h1 { color: var(--active-color); margin: 5px 0 15px; font-size: 1.8rem; }
+        .container { text-align: center; background: white; padding: 15px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 480px; box-sizing: border-box; }
+        h1 { color: var(--active-color); margin: 5px 0 15px; font-size: 1.6rem; }
         .controls { display: flex; justify-content: center; gap: 5px; margin-bottom: 15px; }
         input { padding: 10px; border: 2px solid #eee; border-radius: 10px; width: 60%; font-size: 16px; outline: none; }
         .add-btn { background-color: var(--active-color); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; }
-        .game-view { width: 100%; aspect-ratio: 1 / 1; max-width: 420px; margin: 0 auto; position: relative; display: flex; align-items: center; justify-content: center; }
+        .game-view { width: 100%; aspect-ratio: 1/1; max-width: 400px; margin: 0 auto; position: relative; display: flex; align-items: center; justify-content: center; }
         .board-grid { display: grid; gap: 8px; width: 100%; height: 100%; }
-        .cell { background: white; border: 1px solid #eee; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: clamp(10px, 3.5vw, 14px); color: #555; text-align: center; padding: 2px; }
+        .cell { background: white; border: 1px solid #eee; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: clamp(10px, 3.2vw, 14px); color: #555; text-align: center; padding: 2px; }
         .cell.active { background-color: #ffeb3b !important; border-color: var(--active-color) !important; color: var(--active-color) !important; transform: scale(1.05); z-index: 10; }
         .cell.special { border: 1px dashed #ff7675; color: #e74c3c; }
         .center-btn-area { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 20; width: 45%; }
         .main-btn { width: 100%; padding: 12px 0; border-radius: 50px; border: none; background: var(--active-color); color: white; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
         .slot-container { display: flex; align-items: center; justify-content: center; gap: 15px; width: 100%; height: 100%; }
         .slot-machine { background: #2d3436; border: 6px solid #636e72; border-radius: 20px; padding: 15px; width: 75%; box-shadow: inset 0 0 30px rgba(0,0,0,0.5); }
-        .slot-window { width: 100%; height: 80px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: bold; color: #6c5ce7; text-align: center; }
+        .slot-window { width: 100%; height: 80px; background: white; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; color: #6c5ce7; text-align: center; }
         .lever-base { width: 18px; height: 110px; background: #333; border-radius: 8px; position: relative; cursor: pointer; border: 2px solid #555; }
         .lever-arm { width: 8px; height: 60px; background: #888; position: absolute; top: 5px; left: 50%; transform: translateX(-50%); transition: 0.3s; border-radius: 4px; }
         .lever-knob { width: 34px; height: 34px; background: radial-gradient(circle at 30% 30%, #ff4d4d, #b30000); border-radius: 50%; position: absolute; top: -22px; left: 50%; transform: translateX(-50%); }
@@ -35,8 +35,8 @@
         .food-pool { margin-top: 15px; padding: 10px; background: #f9f9f9; border-radius: 15px; width: 100%; box-sizing: border-box; }
         .pool-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
         .pool-item { background: white; border: 1px solid #ddd; padding: 4px 8px; border-radius: 15px; font-size: 11px; color: #666; display: flex; align-items: center; gap: 5px; }
-        .pool-item b { color: #ff4d4d; cursor: pointer; }
-        #result-text { font-size: 1.4rem; font-weight: bold; margin-top: 15px; min-height: 35px; color: #333; }
+        .pool-item b { color: #ff4d4d; cursor: pointer; padding-left: 3px; }
+        #result-text { font-size: 1.3rem; font-weight: bold; margin-top: 15px; min-height: 35px; color: #333; }
     </style>
 </head>
 <body class="theme-meal">
@@ -48,41 +48,40 @@
     <div class="container">
         <h1 id="title">🍱 正餐大富翁</h1>
         <div class="controls">
-            <input type="text" id="foodInput" placeholder="加菜..." onkeypress="if(event.key==='Enter') addFood()">
+            <input type="text" id="foodInput" placeholder="加新菜..." onkeypress="if(event.key==='Enter') addFood()">
             <button class="add-btn" onclick="addFood()">新增</button>
         </div>
         <div class="game-view" id="gameView"></div>
         <div class="food-pool">
             <div id="poolList" class="pool-list"></div>
         </div>
-        <div id="result-text">點擊按鈕開始！</div>
+        <div id="result-text">今天吃什麼？</div>
     </div>
     <script>
         const defaultData = {
-            meal: ["牛肉麵", "壽司", "滷肉飯", "超商", "水餃", "煎餃", "麥當勞", "義麵", "火鍋", "拉麵", "便當", "肯德基"],
+            meal: ["牛肉麵", "壽司", "滷肉飯", "便利超商", "水餃", "煎餃", "麥當勞", "義大利麵", "火鍋", "拉麵", "便當", "肯德基"],
             snack: ["雞蛋仔", "雞排", "地瓜球", "手搖飲", "可麗餅", "甜甜圈", "鬆餅", "豆花", "冰淇淋", "布丁", "泡芙"],
             night: ["臭豆腐", "蚵仔煎", "烤魷魚", "章魚燒", "骰子牛", "糖葫蘆", "滷味", "鹹酥雞", "胡椒餅"]
         };
         const fillers = ["下 1 格", "前 3 格", "再選一次"];
         let currentMode = 'meal', foods = [...defaultData.meal], gridContent = [], isRunning = false, currentIndex = 0;
 
-        function switchMode(mode) {
+        function switchMode(m) {
             if(isRunning) return;
-            currentMode = mode; foods = [...defaultData[mode]];
-            document.body.className = `theme-${mode}`;
-            document.getElementById('title').innerText = mode==='meal'?"🍱 正餐大富翁":mode==='snack'?"🍰 點心驚喜盒":"🎡 夜市拉霸機";
-            refreshUI();
+            currentMode = m; foods = [...defaultData[m]];
+            document.body.className = `theme-${m}`;
+            document.getElementById('title').innerText = m==='meal'?"🍱 正餐大富翁":m==='snack'?"🍰 點心驚喜盒":"🎡 夜市拉霸機";
+            refresh();
         }
 
-        function refreshUI() {
-            const view = document.getElementById("gameView");
-            view.innerHTML = "";
+        function refresh() {
+            const v = document.getElementById("gameView"); v.innerHTML = "";
             if (currentMode === 'night') {
-                view.innerHTML = `<div class="slot-container"><div class="slot-machine"><div class="slot-window" id="slotOutput">? ? ?</div></div><div class="lever-base" onclick="handleLever()"><div class="lever-arm" id="lArm"><div class="lever-knob"></div></div></div></div>`;
+                v.innerHTML = `<div class="slot-container"><div class="slot-machine"><div class="slot-window" id="slotOut">? ? ?</div></div><div class="lever-base" onclick="pull()"><div class="lever-arm" id="lArm"><div class="lever-knob"></div></div></div></div>`;
             } else {
-                const board = document.createElement('div'); board.className = "board-grid";
+                const b = document.createElement('div'); b.className = "board-grid";
                 let n = 4; while ((4*n-4) < foods.length) n++;
-                board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+                b.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
                 gridContent = [...foods].sort(()=>Math.random()-0.5);
                 while (gridContent.length < (4*n-4)) gridContent.push(fillers[Math.floor(Math.random()*fillers.length)]);
                 const path = [];
@@ -93,33 +92,33 @@
                 gridContent.forEach((t, i) => {
                     const d = document.createElement('div'); d.className = 'cell'+(fillers.includes(t)?' special':'');
                     d.id = `cell-${i}`; d.innerText = t; d.style.gridRow = path[i].r; d.style.gridColumn = path[i].c;
-                    board.appendChild(d);
+                    b.appendChild(d);
                 });
-                view.appendChild(board);
-                const b = document.createElement('div'); b.className="center-btn-area";
-                b.innerHTML=`<button class="main-btn" onclick="startGrid()">幫我選</button>`;
-                view.appendChild(b);
+                v.appendChild(b);
+                const c = document.createElement('div'); c.className="center-btn-area";
+                c.innerHTML=`<button class="main-btn" onclick="goGrid()">選一個</button>`;
+                v.appendChild(c);
             }
             const p = document.getElementById("poolList"); p.innerHTML = "";
-            foods.forEach((f, i) => { const s = document.createElement("span"); s.className="pool-item"; s.innerHTML=`${f} <b onclick="removeFood(${i})">✕</b>`; p.appendChild(s); });
+            foods.forEach((f, i) => { const s = document.createElement("span"); s.className="pool-item"; s.innerHTML=`${f} <b onclick="del(${i})">✕</b>`; p.appendChild(s); });
         }
 
-        function addFood() { const i = document.getElementById("foodInput"); if(i.value.trim()){ foods.push(i.value.trim()); i.value=""; refreshUI(); } }
-        function removeFood(i) { if(!isRunning){ foods.splice(i, 1); refreshUI(); } }
-        function handleLever() { if(isRunning) return; document.getElementById("lArm").classList.add("pulling"); setTimeout(()=>{ document.getElementById("lArm").classList.remove("pulling"); startSlot(); }, 300); }
-        function startSlot() { isRunning=true; let c=0; const t=setInterval(()=>{ const r=foods[Math.floor(Math.random()*foods.length)]; document.getElementById("slotOutput").innerText=r; if(c++>25){ clearInterval(t); isRunning=false; document.getElementById("result-text").innerText="🎉 吃："+r; }}, 70); }
-        function startGrid() {
+        function addFood() { const i = document.getElementById("foodInput"); if(i.value.trim()){ foods.push(i.value.trim()); i.value=""; refresh(); } }
+        function del(i) { if(!isRunning){ foods.splice(i, 1); refresh(); } }
+        function pull() { if(isRunning) return; document.getElementById("lArm").classList.add("pulling"); setTimeout(()=>{ document.getElementById("lArm").classList.remove("pulling"); startS(); }, 300); }
+        function startS() { isRunning=true; let c=0; const t=setInterval(()=>{ const r=foods[Math.floor(Math.random()*foods.length)]; document.getElementById("slotOut").innerText=r; if(c++>25){ clearInterval(t); isRunning=false; document.getElementById("result-text").innerText="🎉 抽到："+r; }}, 70); }
+        function goGrid() {
             if(isRunning) return; isRunning=true; let s=0, total=gridContent.length*3+Math.floor(Math.random()*gridContent.length), spd=50;
             function run() {
                 document.querySelectorAll('.cell').forEach(c=>c.classList.remove('active'));
                 currentIndex = currentMode==='meal' ? (currentIndex+1)%gridContent.length : Math.floor(Math.random()*gridContent.length);
-                document.getElementById(`cell-${currentIndex}`).classList.add('active');
+                const a = document.getElementById(`cell-${currentIndex}`); if(a) a.classList.add('active');
                 if(++s < total){ if(total-s<10) spd+=40; setTimeout(run, spd); }
-                else { isRunning=false; document.getElementById("result-text").innerText="🎉 決定："+gridContent[currentIndex]; }
+                else { isRunning=false; document.getElementById("result-text").innerText="🎉 結果："+gridContent[currentIndex]; }
             }
             run();
         }
-        refreshUI();
+        refresh();
     </script>
 </body>
 </html>
