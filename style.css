@@ -1,55 +1,68 @@
-/* 實體搖桿底座（溝槽） */
-.lever-base { 
-    width: 20px; 
-    height: 120px; 
-    background: #333; 
-    border-radius: 10px; 
-    position: relative; 
-    cursor: pointer;
-    box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
-    border: 2px solid #555;
+/* 顏色主題 */
+:root { --active-color: #e67e22; }
+.theme-meal { --active-color: #e67e22; background-color: #fdf2e9; }
+.theme-snack { --active-color: #ff6b81; background-color: #fff0f3; }
+.theme-night { --active-color: #6c5ce7; background-color: #f3f0ff; }
+
+body { 
+    display: flex; flex-direction: column; align-items: center; 
+    min-height: 100vh; margin: 0; font-family: "Microsoft JhengHei", sans-serif; 
+    padding: 15px 10px; transition: 0.3s; box-sizing: border-box;
 }
 
-/* 搖桿桿身 */
-.lever-arm { 
-    width: 8px; 
-    height: 70px; 
-    background: linear-gradient(to bottom, #999, #666); 
-    position: absolute; 
-    top: 5px; /* 初始位置在上方 */
-    left: 50%; 
-    transform: translateX(-50%); 
-    transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-    border-radius: 4px;
+/* 頂部按鈕：手機版會自動換行，不會擠在一起 */
+.nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 15px; width: 100%; }
+.nav button { padding: 8px 15px; border-radius: 20px; border: none; color: white; font-weight: bold; cursor: pointer; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+/* 主容器：寬度改為 95% 彈性寬度，解決切掉的問題 */
+.container { 
+    text-align: center; background: white; padding: 20px; 
+    border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+    width: 95%; max-width: 550px; box-sizing: border-box; 
+    margin-bottom: 40px;
 }
 
-/* 搖桿紅球 */
-.lever-knob { 
-    width: 36px; 
-    height: 36px; 
-    background: radial-gradient(circle at 30% 30%, #ff4d4d, #b30000); 
-    border-radius: 50%; 
-    position: absolute; 
-    top: -25px; /* 球在桿子頂端 */
-    left: 50%; 
-    transform: translateX(-50%);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+h1 { color: var(--active-color); margin: 5px 0 15px; font-size: 1.8rem; }
+
+/* 輸入區 */
+.controls { display: flex; justify-content: center; gap: 5px; margin-bottom: 15px; }
+input { padding: 10px; border: 2px solid #eee; border-radius: 10px; width: 60%; outline: none; font-size: 16px; } /* 16px 防止 iPhone 自動放大 */
+.add-btn { background-color: var(--active-color); color: white; border: none; padding: 10px 15px; border-radius: 10px; font-weight: bold; cursor: pointer; white-space: nowrap; }
+
+/* 遊戲視窗：改用寬度 100% 並搭配 aspect-ratio 維持正方形 */
+.game-view { 
+    width: 100%; max-width: 450px; aspect-ratio: 1 / 1; 
+    margin: 0 auto; position: relative; 
+    display: flex; align-items: center; justify-content: center; 
 }
 
-/* ⚡ 重點：拉下時的動畫（垂直向下位移並稍微縮短） */
-.lever-arm.pulling { 
-    top: 50px; /* 桿子往下移 */
-    height: 40px; /* 桿子因為視角縮短 */
+/* 格子：自動縮放字體，防止撐破 */
+.board-grid { display: grid; gap: 8px; width: 100%; height: 100%; }
+.cell { 
+    background: white; border: 1px solid #eee; border-radius: 10px; 
+    display: flex; align-items: center; justify-content: center; 
+    font-weight: bold; 
+    font-size: clamp(10px, 3.5vw, 14px); /* 關鍵：根據螢幕寬度自動變大縮小字體 */
+    color: #555; text-align: center; padding: 2px; overflow: hidden; line-height: 1.2;
 }
 
-/* 裝飾：底座下方加個固定環 */
-.lever-base::after {
-    content: "";
-    position: absolute;
-    bottom: -10px;
-    left: -5px;
-    width: 30px;
-    height: 10px;
-    background: #222;
-    border-radius: 5px;
-}
+.cell.active { background-color: #ffeb3b !important; border-color: var(--active-color) !important; color: var(--active-color) !important; transform: scale(1.08); z-index: 10; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+.cell.special { border: 1px dashed #ff7675; color: #e74c3c; background-color: #fffafa; }
+
+/* 中間大按鈕 */
+.center-btn-area { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 20; width: 45%; }
+.main-btn { width: 100%; padding: 12px 0; border-radius: 50px; border: none; background: var(--active-color); color: white; font-weight: bold; cursor: pointer; box-shadow: 0 6px 15px rgba(0,0,0,0.2); font-size: 1.1rem; }
+
+/* 獎池清單：手機版縮小顯示 */
+.food-pool { margin-top: 25px; padding: 12px; background: #f9f9f9; border-radius: 15px; border: 1px solid #eee; }
+.pool-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.pool-item { background: white; border: 1px solid #ddd; padding: 4px 10px; border-radius: 20px; font-size: 11px; color: #666; display: flex; align-items: center; gap: 4px; }
+.pool-item b { color: #ff4d4d; cursor: pointer; font-size: 14px; }
+
+/* 夜市版縮放修正 */
+.slot-machine { padding: 25px; width: 85%; border-radius: 20px; }
+.slot-window { width: 100%; height: 90px; font-size: 1.4rem; border-radius: 10px; }
+.lever-base { height: 110px; width: 20px; }
+.lever-arm { height: 70px; }
+
+#result-text { font-size: 1.4rem; font-weight: bold; margin-top: 20px; min-height: 35px; color: #333; }
