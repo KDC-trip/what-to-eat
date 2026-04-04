@@ -2,187 +2,259 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>美食全攻略 - 大富翁 & 抽獎球</title>
+    <title>美食全攻略：大富翁、抽獎機與驚喜盒</title>
     <style>
         :root {
-            --main-orange: #e67e22;
-            --main-pink: #ff6b81;
-            --main-purple: #a29bfe;
+            --active-color: #e67e22;
         }
-        body { background-color: #fdf2e9; transition: 0.5s; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: "Microsoft JhengHei", sans-serif; }
-        
-        /* 模式切換按鈕 */
-        .nav { position: fixed; top: 20px; display: flex; gap: 10px; z-index: 100; }
-        .nav button { padding: 10px 20px; border-radius: 20px; border: none; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        
-        .container { text-align: center; background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 600px; position: relative; overflow: hidden; }
-        
-        /* 正餐版大富翁樣式 */
-        .board { display: grid; gap: 10px; margin: 20px auto; width: 450px; height: 450px; position: relative; }
-        .cell { background: white; border: 2px solid #eee; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; color: #555; transition: 0.1s; text-align: center; padding: 5px; }
-        .cell.active { background-color: #ffeb3b !important; border-color: var(--active-color) !important; transform: scale(1.1); z-index: 5; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
+        .theme-meal { --active-color: #e67e22; background-color: #fdf2e9; }
+        .theme-snack { --active-color: #ff6b81; background-color: #fff0f3; }
+        .theme-night { --active-color: #6c5ce7; background-color: #f3f0ff; }
 
-        /* 夜市版：轉盤風格 */
-        .wheel-mode .cell { border-radius: 50%; border-style: solid; background: #f1f2f6; }
-        
-        .center-area { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; width: 40%; }
-        .decide-btn { width: 100%; padding: 15px; font-size: 1.2rem; border-radius: 50px; border: none; color: white; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        
-        input { padding: 10px; border: 2px solid #eee; border-radius: 8px; width: 180px; outline: none; }
-        #result-text { font-size: 1.6rem; font-weight: bold; margin-top: 20px; min-height: 40px; }
+        body { 
+            display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; margin: 0; transition: 0.5s; 
+            font-family: "Microsoft JhengHei", sans-serif;
+            padding-top: 10px;
+        }
 
-        /* 不同模式的主題色 */
-        .theme-meal { --active-color: #e67e22; }
-        .theme-snack { --active-color: #ff6b81; }
-        .theme-night { --active-color: #6c5ce7; }
+        /* 導覽列：移到最上方 */
+        .nav { display: flex; gap: 10px; margin-bottom: 20px; }
+        .nav button { 
+            padding: 8px 18px; border-radius: 20px; border: none; 
+            color: white; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .nav button:hover { transform: scale(1.05); }
+
+        .container { 
+            text-align: center; background: white; padding: 30px; 
+            border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            width: 550px; min-height: 650px; position: relative;
+        }
+
+        /* 輸入框與主標題 */
+        h1 { color: var(--active-color); margin: 10px 0; font-size: 2rem; }
+        .controls { margin-bottom: 15px; }
+        input { padding: 10px; border: 2px solid #eee; border-radius: 10px; width: 200px; outline: none; }
+        .add-btn { background-color: var(--active-color); color: white; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; }
+
+        /* 遊戲區域容器 */
+        .game-view { position: relative; width: 480px; height: 480px; margin: 0 auto; }
+
+        /* 模式 1：正餐大富翁 */
+        .board-grid { display: grid; gap: 10px; width: 100%; height: 100%; }
+        .cell { 
+            background: white; border: 2px solid #eee; border-radius: 12px; 
+            display: flex; align-items: center; justify-content: center; 
+            font-weight: bold; font-size: 15px; color: #555; transition: 0.1s;
+        }
+        .cell.active { 
+            background-color: #ffeb3b !important; border-color: var(--active-color) !important; 
+            transform: scale(1.1); z-index: 5; box-shadow: 0 0 15px rgba(0,0,0,0.1); 
+        }
+
+        /* 模式 2：夜市抽獎機 (垂直滾動視覺) */
+        .slot-machine { 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100%; overflow: hidden; position: relative;
+            background: #2d3436; border-radius: 20px; border: 8px solid #636e72;
+        }
+        .slot-window {
+            width: 250px; height: 120px; background: white; border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.5rem; font-weight: bold; color: #6c5ce7;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* 中間按鈕 */
+        .center-btn-area { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; }
+        .main-btn { 
+            padding: 15px 30px; font-size: 1.2rem; border-radius: 50px; 
+            border: none; background: var(--active-color); color: white; 
+            font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        #result-text { font-size: 1.5rem; font-weight: bold; margin-top: 20px; height: 40px; color: #333; }
+        
+        .special { border: 2px dashed #ff7675; color: #e74c3c; }
     </style>
 </head>
 <body class="theme-meal">
 
     <div class="nav">
-        <button style="background: #e67e22; color: white;" onclick="switchMode('meal')">🍱 正餐大富翁</button>
-        <button style="background: #ff6b81; color: white;" onclick="switchMode('snack')">🍰 點心午茶</button>
-        <button style="background: #6c5ce7; color: white;" onclick="switchMode('night')">🎡 夜市抽獎</button>
+        <button style="background: #e67e22;" onclick="switchMode('meal')">🍱 正餐大富翁</button>
+        <button style="background: #ff6b81;" onclick="switchMode('snack')">🍰 點心驚喜盒</button>
+        <button style="background: #6c5ce7;" onclick="switchMode('night')">🎡 夜市抽獎機</button>
     </div>
 
-    <div class="container" id="mainContainer">
-        <h1 id="title" style="color: var(--active-color)">🍱 正餐大富翁</h1>
+    <div class="container">
+        <h1 id="title">🍱 正餐大富翁</h1>
         
         <div class="controls">
-            <input type="text" id="foodInput" placeholder="新增清單..." onkeypress="if(event.key==='Enter') addFood()">
-            <button onclick="addFood()" style="background: var(--active-color)">新增</button>
+            <input type="text" id="foodInput" placeholder="新增選項..." onkeypress="if(event.key==='Enter') addFood()">
+            <button class="add-btn" onclick="addFood()">新增</button>
         </div>
 
-        <div class="board" id="board">
-            <div class="center-area">
-                <button class="decide-btn" id="startBtn" onclick="startGame()" style="background: var(--active-color)">幫我選一個</button>
-            </div>
+        <div class="game-view" id="gameView">
+            <!-- 內容由 JS 動態切換 -->
         </div>
 
-        <div id="result-text">今天想吃什麼呢？</div>
+        <div id="result-text">準備好了嗎？</div>
     </div>
 
 <script>
-    // 預設清單（已移除豆花）
     const data = {
         meal: ["牛肉麵", "壽司", "滷肉飯", "便利商店", "水餃", "煎餃", "麥當勞", "義大利麵", "火鍋", "拉麵", "便當", "肯德基"],
-        snack: ["雞蛋仔", "紅豆餅", "雞排", "地瓜球", "手搖飲", "可麗餅", "甜甜圈", "鬆餅", "豆花", "冰淇淋"],
+        snack: ["雞蛋仔", "紅豆餅", "雞排", "地瓜球", "手搖飲", "可麗餅", "甜甜圈", "鬆餅", "豆花", "冰淇淋", "布丁", "泡芙"],
         night: ["臭豆腐", "蚵仔煎", "大腸包小腸", "烤魷魚", "排骨酥", "章魚燒", "地瓜球", "骰子牛", "糖葫蘆", "滷味", "鹹酥雞", "胡椒餅"]
     };
-    
     const fillers = ["下 1 格", "前 3 格", "下 2 格", "再選一次"];
+    
     let currentMode = 'meal';
     let foods = [...data.meal];
     let gridContent = [];
-    let currentIndex = 0;
     let isRunning = false;
+    let currentIndex = 0;
 
     function switchMode(mode) {
         if(isRunning) return;
         currentMode = mode;
         foods = [...data[mode]];
-        
-        // 切換視覺主題
         document.body.className = `theme-${mode}`;
-        const container = document.getElementById('mainContainer');
-        if(mode === 'night') container.classList.add('wheel-mode');
-        else container.classList.remove('wheel-mode');
-        
-        const titles = { meal: "🍱 正餐大富翁", snack: "🍰 點心午茶", night: "🎡 夜市抽獎" };
-        document.getElementById('title').innerText = titles[mode];
-        
-        renderBoard();
+        document.getElementById('title').innerText = 
+            mode === 'meal' ? "🍱 正餐大富翁" : mode === 'snack' ? "🍰 點心驚喜盒" : "🎡 夜市抽獎機";
+        renderView();
     }
 
-    function renderBoard() {
-        const board = document.getElementById("board");
-        board.querySelectorAll('.cell').forEach(c => c.remove());
+    function renderView() {
+        const view = document.getElementById("gameView");
+        view.innerHTML = "";
+        
+        if (currentMode === 'meal' || currentMode === 'snack') {
+            // 格子模式
+            const board = document.createElement('div');
+            board.className = "board-grid";
+            
+            let n = 4;
+            while ((4 * n - 4) < foods.length) n++;
+            board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+            board.style.gridTemplateRows = `repeat(${n}, 1fr)`;
+            
+            const total = 4 * n - 4;
+            gridContent = [...foods].sort(() => Math.random() - 0.5);
+            let fIdx = 0;
+            while (gridContent.length < total) {
+                gridContent.push(fillers[fIdx % fillers.length]);
+                fIdx++;
+            }
+            gridContent = gridContent.sort(() => Math.random() - 0.5);
 
-        let n = 4;
-        while ((4 * n - 4) < foods.length) n++;
-        const total = 4 * n - 4;
+            const path = getPath(n);
+            gridContent.forEach((text, i) => {
+                const div = document.createElement('div');
+                div.className = 'cell' + (fillers.includes(text) ? ' special' : '');
+                div.id = `cell-${i}`;
+                div.innerText = text;
+                div.style.gridRow = path[i].r;
+                div.style.gridColumn = path[i].c;
+                board.appendChild(div);
+            });
 
-        let combined = [...foods].sort(() => Math.random() - 0.5);
-        let fIdx = 0;
-        while (combined.length < total) {
-            combined.push(fillers[fIdx % fillers.length]);
-            fIdx++;
+            const btnArea = document.createElement('div');
+            btnArea.className = "center-btn-area";
+            btnArea.innerHTML = `<button class="main-btn" onclick="startGame()">幫我選一個</button>`;
+            view.appendChild(board);
+            view.appendChild(btnArea);
+
+        } else {
+            // 夜市抽獎機模式
+            view.innerHTML = `
+                <div class="slot-machine">
+                    <div class="slot-window" id="slotOutput">? ? ?</div>
+                </div>
+                <div class="center-btn-area" style="top: 85%">
+                    <button class="main-btn" onclick="startSlot()">拉下搖桿！</button>
+                </div>
+            `;
         }
-        gridContent = combined.sort(() => Math.random() - 0.5);
+    }
 
-        board.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
-        board.style.gridTemplateRows = `repeat(${n}, 1fr)`;
-
+    function getPath(n) {
         const path = [];
         for (let i = 0; i < n; i++) path.push({r: 1, c: i + 1});
         for (let i = 2; i < n; i++) path.push({r: i, c: n});
         for (let i = n; i >= 1; i--) path.push({r: n, c: i});
         for (let i = n - 1; i >= 2; i--) path.push({r: i, c: 1});
-
-        gridContent.forEach((text, i) => {
-            const div = document.createElement('div');
-            div.className = 'cell' + (fillers.includes(text) ? ' special' : '');
-            div.id = `cell-${i}`;
-            div.innerText = text;
-            div.style.gridRow = path[i].r;
-            div.style.gridColumn = path[i].c;
-            board.appendChild(div);
-        });
+        return path;
     }
 
-    function addFood() {
-        const val = document.getElementById("foodInput").value.trim();
-        if (val) {
-            foods.push(val);
-            document.getElementById("foodInput").value = "";
-            renderBoard();
-        }
-    }
+    // --- 遊戲邏輯 ---
 
     function startGame() {
-        if (isRunning) return;
+        if(isRunning) return;
         isRunning = true;
-        document.getElementById("startBtn").disabled = true;
         document.getElementById("result-text").innerText = "命運轉動中...";
+        
+        let steps = 0;
+        let totalSteps = gridContent.length * 3 + Math.floor(Math.random() * gridContent.length);
+        let speed = 50;
 
-        // 增加隨機性：圈數隨機 3~6 圈
-        let rounds = Math.floor(Math.random() * 4) + 3;
-        let totalSteps = (gridContent.length * rounds) + Math.floor(Math.random() * gridContent.length);
-        let currentStep = 0;
-        let speed = 40;
-
-        function roll() {
+        function run() {
             document.querySelectorAll('.cell').forEach(c => c.classList.remove('active'));
-            currentIndex = (currentIndex + 1) % gridContent.length;
+            if (currentMode === 'meal') {
+                currentIndex = (currentIndex + 1) % gridContent.length;
+            } else {
+                currentIndex = Math.floor(Math.random() * gridContent.length); // 點心版隨機跳
+            }
             document.getElementById(`cell-${currentIndex}`).classList.add('active');
-
-            currentStep++;
-            if (currentStep < totalSteps) {
-                // 模擬變速效果
-                if (totalSteps - currentStep < 15) speed += 30;
-                setTimeout(roll, speed);
+            
+            steps++;
+            if (steps < totalSteps) {
+                if (totalSteps - steps < 10) speed += 40;
+                setTimeout(run, speed);
             } else {
                 handleResult();
             }
         }
-        roll();
+        run();
+    }
+
+    function startSlot() {
+        if(isRunning) return;
+        isRunning = true;
+        const output = document.getElementById("slotOutput");
+        let count = 0;
+        let maxCount = 30;
+        
+        const timer = setInterval(() => {
+            output.innerText = foods[Math.floor(Math.random() * foods.length)];
+            count++;
+            if (count > maxCount) {
+                clearInterval(timer);
+                isRunning = false;
+                document.getElementById("result-text").innerText = "🎉 抽到好料：" + output.innerText;
+            }
+        }, 80);
     }
 
     function handleResult() {
         const res = gridContent[currentIndex];
         if (fillers.includes(res)) {
-            document.getElementById("result-text").innerText = `🎲 抽到：${res}！`;
-            // 此處可加入自動跳轉邏輯
+            document.getElementById("result-text").innerText = `🎲 觸發特殊：${res}`;
+            // 此處可依之前邏輯加入自動連跳
             isRunning = false;
-            document.getElementById("startBtn").disabled = false;
         } else {
             document.getElementById("result-text").innerText = `🎉 決定吃：${res}`;
             isRunning = false;
-            document.getElementById("startBtn").disabled = false;
         }
     }
 
-    renderBoard();
+    function addFood() {
+        const val = document.getElementById("foodInput").value.trim();
+        if (val) { foods.push(val); document.getElementById("foodInput").value = ""; renderView(); }
+    }
+
+    renderView();
 </script>
 </body>
 </html>
