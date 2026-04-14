@@ -7,12 +7,11 @@
     
     <!-- 🔍 SEO 強化標籤 -->
     <title>今天吃什麼？隨機美食決定器 | 跟著小K去散步</title>
-    <meta name="description" content="KDC 旅遊生活工具箱：解決午晚餐煩惱的美食隨機產生器。內建大富翁與拉霸模式，支援自定義菜單、自動儲存，並提供一鍵開啟 Google 地圖導航功能。">
+    <meta name="description" content="KDC 旅遊生活工具箱：解決午晚餐煩惱的美食隨機產生器。內建大富翁與拉霸模式，支援自定義菜單與自動儲存功能。">
     <meta name="keywords" content="今天吃什麼, 美食隨機產生器, 午餐推薦, 餐廳決定器, 大富翁, 拉霸機, KDC工具箱, 旅遊全攻略">
     <meta name="author" content="KDC-trip">
 
     <style>
-        /* 直接把樣式內建，保證絕對不會讀不到畫面 */
         :root { --active-color: #e67e22; }
         .theme-meal { --active-color: #e67e22; background-color: #fdf2e9; }
         .theme-snack { --active-color: #ff6b81; background-color: #fff0f3; }
@@ -43,23 +42,7 @@
         .pool-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; }
         .pool-item { background: white; border: 1px solid #ddd; padding: 4px 8px; border-radius: 15px; font-size: 11px; color: #666; display: flex; align-items: center; gap: 5px; }
         .pool-item b { color: #ff4d4d; cursor: pointer; padding-left: 3px; }
-        #result-text { font-size: 1.2rem; font-weight: bold; margin-top: 15px; min-height: 80px; color: #333; line-height: 1.5; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        
-        /* 📍 地圖按鈕樣式優化 */
-        .map-btn {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 8px 20px;
-            background-color: #3498db;
-            color: white !important;
-            border-radius: 20px;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
-            transition: 0.2s;
-        }
-        .map-btn:active { transform: scale(0.95); }
+        #result-text { font-size: 1.3rem; font-weight: bold; margin-top: 15px; min-height: 50px; color: #333; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body class="theme-meal">
@@ -90,7 +73,6 @@
         const fillers = ["下 1 格", "前 3 格", "再選一次"];
         let currentMode = 'meal', foods = [], gridContent = [], isRunning = false, currentIndex = 0;
 
-        // 💾 功能: 初始化與讀取儲存
         function init() {
             const savedData = localStorage.getItem('kdc_food_data');
             if (savedData) {
@@ -170,19 +152,12 @@
             refresh(); 
         }
 
-        // 📍 功能: 顯示結果並加上專業地圖按鈕
         function displayFinalResult(name) {
             const res = document.getElementById('result-text');
             if (fillers.includes(name)) {
-                res.innerHTML = `<div>命運安排：<span style="color:#e74c3c">${name}</span></div>`;
+                res.innerHTML = `命運安排：<span style="color:#e74c3c">${name}</span>`;
             } else {
-                const mapUrl = `https://google.com{encodeURIComponent(name)}`;
-                res.innerHTML = `
-                    <div>今天就吃：<b style="color:var(--active-color)">${name}</b></div>
-                    <a href="${mapUrl}" target="_blank" rel="noopener noreferrer" class="map-btn">
-                       📍 開啟 Google 地圖導航
-                    </a>
-                `;
+                res.innerHTML = `今天就吃：<b style="color:var(--active-color); font-size: 1.5rem; margin-left: 10px;">${name}</b>`;
             }
         }
 
